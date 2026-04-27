@@ -94,6 +94,7 @@ def back_button():
 import requests
 
 @st.cache_data
+@st.cache_data
 def get_author_bio(author_name):
     import requests
     headers = {"User-Agent": "TheOtherShelf/1.0 (book recommender project)"}
@@ -106,36 +107,18 @@ def get_author_bio(author_name):
         )
         if r.status_code == 200:
             data = r.json()
-            return {
-                "extract": data.get("extract", ""),
-                "image":   data.get("thumbnail", {}).get("source", ""),
-                "url":     data.get("content_urls", {}).get("desktop", {}).get("page", "")
-            }
-        # Fallback — try search API
-        r2 = requests.get(
-            "https://en.wikipedia.org/w/api.php",
-            headers=headers,
-            params={
-                "action":   "query",
-                "list":     "search",
-                "srsearch": author_name + " author writer",
-                "format":   "json",
-                "srlimit":  1,
-            },
-            timeout=5
-        )
-        results = r2.json().get("query", {}).get("search", [])
-        if results:
-            title = results[0]["title"]
-            r3 = requests.get(
-                f"https://en.wikipedia.org/api/rest_v1/page/summary/{title.replace(' ', '_')}",
-                headers=headers,
-                timeout=5
-            )
-            if r3.status_code == 200:
-                data = r3.json()
+            extract = data.get("extract", "")
+            # Make sure it's actually about a person/author
+            # not a name definition, place, or disambiguation
+            author_keywords = ["author", "writer", "novelist", "poet", 
+                              "fiction", "fantasy", "science fiction",
+                              "born", "published", "book", "novel"]
+            extract_lower = extract.lower()
+            is_relevant = any(kw in extract_lower for kw in author_keywords)
+            
+            if is_relevant and data.get("type") == "standard":
                 return {
-                    "extract": data.get("extract", ""),
+                    "extract": extract,
                     "image":   data.get("thumbnail", {}).get("source", ""),
                     "url":     data.get("content_urls", {}).get("desktop", {}).get("page", "")
                 }
