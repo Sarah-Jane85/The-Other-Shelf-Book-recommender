@@ -64,18 +64,26 @@ input_data_non_fiction:
   keywords:
 
 output_data_raw_non_fiction:
-  api_results:
-  scraped_results:
+  api_results:     "Data/Raw/non fiction/leftpolitics_raw(API).csv"
+  scraped_results: "Data/Raw/non fiction/leftpolitics_raw(scraping).csv"
 
 output_data_clean_non_fiction:
-  deduplicated:
-  filtered:
-  final:
+  deduplicated:    "Data/non fiction/leftpolitics_clean(scraping).csv"
+  filtered:        "Data/non fiction/leftpolitics_clean.csv"
+  with_descriptions: "Data/non fiction/leftpolitics_with_descriptions.csv"
+  final:           "Data/non fiction/leftpolitics_final_clean.csv"
+
+# --- recommender ---
+recommender:
+  data:            "Data/non fiction/leftpolitics_final_clean.csv"
+  src:             Src/recommender.py
+  streamlit_page:  Streamlit/Pages/recommendations.py
 
 # --- shared Streamlit inputs ---
 input_data_streamlit:
   non_western:    Data/Clean/non_western/books_final.csv
-  colleague_a:    
+  non_fiction:    "Data/non fiction/leftpolitics_final_clean.csv"
+  colleague_a:
   colleague_b:
 
 
