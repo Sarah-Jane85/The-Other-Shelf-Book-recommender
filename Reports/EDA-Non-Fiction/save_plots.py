@@ -24,7 +24,7 @@ from sklearn.metrics import silhouette_score
 # ── Paths ─────────────────────────────────────────────────────────────────────
 HERE      = Path(__file__).resolve().parent
 ROOT      = HERE.parents[1]          # Book-recommendations/
-DATA_PATH = ROOT / "Data" / "non fiction" / "leftpolitics_final_clean.csv"
+DATA_PATH = ROOT / "Data" / "Clean" / "non fiction" / "leftpolitics_final_clean.csv"
 
 def save(fig, name):
     path = HERE / name

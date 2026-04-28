@@ -93,7 +93,7 @@ def divider(slide, t, color=GOLD):
     rect(slide, 0.4, t, 12.5, 0.04, fill_color=color)
 
 
-def slide_number(slide, n, total=7):
+def slide_number(slide, n, total=8):
     textbox(slide, f"{n} / {total}", 12.2, 7.1, 1.0, 0.35,
             size=11, color=TAUPE, align=PP_ALIGN.RIGHT)
 
@@ -171,7 +171,55 @@ slide_number(s, 2)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SLIDE 3 — How it works
+# SLIDE 3 — The Data
+# ══════════════════════════════════════════════════════════════════════════════
+s = add_slide()
+bg(s, DARK_BG)
+rect(s, 0, 0, 0.35, 7.5, fill_color=MID_BROWN)
+divider(s, 1.55)
+
+label(s, "The Data", 0.7, 0.25)
+textbox(s, "Where the data comes from",
+        0.7, 0.6, 11, 1.0,
+        size=38, bold=True, color=CREAM)
+
+textbox(s, "Collection", 0.7, 1.75, 5.8, 0.5,
+        size=17, bold=True, color=GOLD)
+bullet_box(s, [
+    "Open Library API (openlibrary.org/search.json) — queried author-by-author "
+    "across 39 curated thinkers; up to 50 results each → ~1,316 records.",
+    "Goodreads scraping — curl + BeautifulSoup; paginated search results, "
+    "up to 10 pages per author → ~5,487 raw records.",
+    "Description enrichment — each Goodreads book page was visited individually "
+    "to fetch the full synopsis; progress saved every 50 books for resilience.",
+    "Authors span: Black American thought, African/Caribbean theory, Latin American "
+    "thinkers, feminist & queer theory, contemporary left (Chomsky, Klein, Graeber…).",
+], 0.7, 2.2, 5.8, 4.2, size=16, color=CREAM)
+
+textbox(s, "Cleaning", 6.8, 1.75, 6.0, 0.5,
+        size=17, bold=True, color=GOLD)
+bullet_box(s, [
+    "Stripped whitespace; standardised author name casing.",
+    "Dropped rows missing title, author, or description "
+    "(1,314 books had no synopsis and were removed).",
+    "Language detection with langdetect — kept English only; "
+    "1,211 non-English books removed.",
+    "Deduplication on title + author.",
+    "Final dataset: 2,960 books with titles, authors, and full descriptions.",
+], 6.8, 2.2, 6.0, 4.2, size=16, color=CREAM)
+
+rect(s, 6.5, 1.7, 0.04, 5.0, fill_color=MID_BROWN)
+
+textbox(s,
+        "39 authors  ·  2 sources  ·  ~6,800 raw records  →  2,960 final books",
+        0.7, 6.05, 12.0, 0.7,
+        size=17, color=GOLD, italic=True, align=PP_ALIGN.CENTER)
+
+slide_number(s, 3)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SLIDE 4 — How it works (pipeline)
 # ══════════════════════════════════════════════════════════════════════════════
 s = add_slide()
 bg(s, DARK_BG)
@@ -199,11 +247,11 @@ for i, (num, title, body) in enumerate(steps):
     textbox(s, title, l + 0.12, 2.75, box_w - 0.2, 0.55, size=17, bold=True, color=CREAM)
     textbox(s, body,  l + 0.12, 3.35, box_w - 0.2, 2.8,  size=14, color=TAUPE)
 
-slide_number(s, 3)
+slide_number(s, 5)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SLIDE 4 — Methodology
+# SLIDE 5 — Methodology
 # ══════════════════════════════════════════════════════════════════════════════
 s = add_slide()
 bg(s, DARK_BG)
@@ -239,11 +287,11 @@ bullet_box(s, [
 ], 6.8, 2.2, 6.0, 4.0, size=17, color=CREAM)
 
 rect(s, 6.5, 1.7, 0.04, 5.0, fill_color=MID_BROWN)
-slide_number(s, 4)
+slide_number(s, 5)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SLIDE 5 — Our process
+# SLIDE 6 — Our process
 # ══════════════════════════════════════════════════════════════════════════════
 s = add_slide()
 bg(s, DARK_BG)
@@ -279,11 +327,11 @@ for i, (phase, points) in enumerate(phases):
     textbox(s, phase, l + 0.15, t + 0.12, 5.6, 0.45, size=15, bold=True, color=GOLD)
     bullet_box(s, points, l + 0.05, t + 0.55, 5.75, 1.4, size=13, color=CREAM)
 
-slide_number(s, 5)
+slide_number(s, 6)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SLIDE 6 — The product & audience
+# SLIDE 7 — The product & audience
 # ══════════════════════════════════════════════════════════════════════════════
 s = add_slide()
 bg(s, DARK_BG)
@@ -315,11 +363,11 @@ bullet_box(s, [
 ], 6.8, 2.2, 6.0, 3.8, size=17, color=CREAM)
 
 rect(s, 6.5, 1.7, 0.04, 5.0, fill_color=MID_BROWN)
-slide_number(s, 6)
+slide_number(s, 7)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SLIDE 7 — Challenges
+# SLIDE 8 — Challenges
 # ══════════════════════════════════════════════════════════════════════════════
 s = add_slide()
 bg(s, DARK_BG)
@@ -359,7 +407,7 @@ for i, (challenge, points) in enumerate(challenges):
     textbox(s, challenge, l + 0.15, t + 0.12, 5.6, 0.45, size=15, bold=True, color=GOLD)
     bullet_box(s, points, l + 0.05, t + 0.55, 5.75, 1.45, size=12, color=CREAM)
 
-slide_number(s, 7)
+slide_number(s, 8)
 
 
 # ── Save ───────────────────────────────────────────────────────────────────────

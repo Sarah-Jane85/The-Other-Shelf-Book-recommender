@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-DATA_PATH = Path(__file__).parent.parent / "Data" / "non fiction" / "leftpolitics_final_clean.csv"
+DATA_PATH = Path(__file__).parent.parent / "Data" / "Clean" / "non fiction" / "leftpolitics_final_clean.csv"
 
 
 def load_data() -> pd.DataFrame:
