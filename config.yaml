@@ -85,16 +85,7 @@ recommender:
 
 # --- shared Streamlit inputs ---
 input_data_streamlit:
-<<<<<<< HEAD
-  non_western:    Data/Clean/non_western/books_final.csv
-  non_fiction:    "Data/non fiction/leftpolitics_final_clean.csv"
-  colleague_a:
-  colleague_b:
-
-
-=======
   non_western_fantasy:  Data/Clean/merged_non_western_fantasy.json
   models:               Models/
   graphic_novels:
-  non_fiction:
->>>>>>> f752092f1b62811a90458ce1cbebb32eb5874997
+  non_fiction:          "Data/non fiction/leftpolitics_final_clean.csv"
