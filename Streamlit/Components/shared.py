@@ -38,10 +38,109 @@ def set_page_style():
 
             /* ── Input fields ── */
             .stTextInput > div > div > input {{
-                background-color: rgba(255,255,255,0.15);
-                color: #F5F0E8;
-                border: 1px solid rgba(255,255,255,0.3);
-                border-radius: 8px;
+                background-color: rgba(30, 20, 15, 0.85) !important;
+                color: #F5F0E8 !important;
+                border: 1px solid rgba(255,255,255,0.3) !important;
+                border-radius: 8px !important;
+            }}
+            .stTextInput > div > div > input::placeholder {{
+                color: rgba(245,240,232,0.5) !important;
+            }}
+
+            /* ── Selectbox ── */
+            .stSelectbox > div > div {{
+                background-color: rgba(30, 20, 15, 0.85) !important;
+                color: #F5F0E8 !important;
+                border: 1px solid rgba(255,255,255,0.3) !important;
+            }}
+            .stSelectbox > div > div > div {{
+                color: #F5F0E8 !important;
+            }}
+            [data-testid="stSelectbox"] span {{
+                color: #F5F0E8 !important;
+            }}
+
+            /* ── Selectbox dropdown list ── */
+            [data-baseweb="select"] ul, [data-baseweb="popover"] ul {{
+                background-color: #1E140F !important;
+                color: #F5F0E8 !important;
+            }}
+            [data-baseweb="select"] li, [data-baseweb="popover"] li {{
+                background-color: #1E140F !important;
+                color: #F5F0E8 !important;
+            }}
+            [data-baseweb="select"] li:hover, [data-baseweb="popover"] li:hover {{
+                background-color: rgba(180, 130, 70, 0.3) !important;
+            }}
+
+            /* ── Radio buttons ── */
+            .stRadio > div {{
+                background-color: transparent !important;
+            }}
+            .stRadio label, .stRadio span {{
+                color: #F5F0E8 !important;
+            }}
+
+            /* ── Expander ── */
+            .streamlit-expanderHeader {{
+                background-color: rgba(30, 20, 15, 0.85) !important;
+                color: #F5F0E8 !important;
+                border: 1px solid rgba(255,255,255,0.15) !important;
+                border-radius: 8px !important;
+            }}
+            .streamlit-expanderContent {{
+                background-color: rgba(20, 12, 8, 0.9) !important;
+                color: #F5F0E8 !important;
+                border: 1px solid rgba(255,255,255,0.1) !important;
+            }}
+            [data-testid="stExpander"] {{
+                background-color: rgba(30, 20, 15, 0.85) !important;
+                border: 1px solid rgba(255,255,255,0.15) !important;
+                border-radius: 8px !important;
+            }}
+            [data-testid="stExpander"] p,
+            [data-testid="stExpander"] div {{
+                color: #F5F0E8 !important;
+            }}
+
+            /* ── Tabs ── */
+            .stTabs [data-baseweb="tab-list"] {{
+                background-color: rgba(20, 12, 8, 0.9) !important;
+            }}
+            .stTabs [data-baseweb="tab"] {{
+                background-color: transparent !important;
+                color: #D4C5A9 !important;
+            }}
+            .stTabs [aria-selected="true"] {{
+                color: #F5D78E !important;
+                border-bottom-color: #F5D78E !important;
+            }}
+            .stTabs [data-baseweb="tab-panel"] {{
+                background-color: rgba(20, 12, 8, 0.9) !important;
+                color: #F5F0E8 !important;
+            }}
+
+            /* ── Dialog / modal ── */
+            [data-testid="stDialog"] > div {{
+                background-color: #1A100A !important;
+                color: #F5F0E8 !important;
+                border: 1px solid rgba(255,255,255,0.15) !important;
+            }}
+            [data-testid="stDialog"] p,
+            [data-testid="stDialog"] span,
+            [data-testid="stDialog"] div {{
+                color: #F5F0E8 !important;
+            }}
+
+            /* ── Slider ── */
+            [data-testid="stSlider"] span {{
+                color: #F5F0E8 !important;
+            }}
+
+            /* ── Warning / info boxes ── */
+            .stAlert {{
+                background-color: rgba(30, 20, 15, 0.85) !important;
+                color: #F5F0E8 !important;
             }}
 
             /* ── Buttons ── */
@@ -93,7 +192,6 @@ def back_button():
 # ── Author bio ────────────────────────────────────────────────────────────────
 import requests
 
-@st.cache_data
 @st.cache_data
 def get_author_bio(author_name):
     import requests
