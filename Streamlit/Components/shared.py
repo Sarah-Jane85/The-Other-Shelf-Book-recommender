@@ -161,6 +161,7 @@ def show_author_bio(authors, safe_fn):
         else:
             st.markdown(f"""
                 <p style="color:#D4C5A9; font-size:0.9rem;">
+                    No bio found for {safe_fn(selected)}.
                     No Bio found for {safe_fn(selected)}.
                 </p>
             """, unsafe_allow_html=True)

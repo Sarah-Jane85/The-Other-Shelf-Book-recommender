@@ -92,7 +92,7 @@ with col1:
 
 with col2:
     st.markdown(f"""
-        <a href="/Non_Fiction" target="_self" style="text-decoration:none;">
+        <a href="/Non-Fiction" target="_self" style="text-decoration:none;">
             <div style="text-align:center;">
                 <img class="book-img" src="data:image/png;base64,{img_nonfic}"/>
                 <div class="book-title">Non-Fiction</div>
