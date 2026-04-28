@@ -146,7 +146,7 @@ def show_book_dialog(book):
                     st.image(bio["image"], width=130)
         else:
             st.markdown(
-                f"<p style='color:#D4C5A9;'>No Wikipedia page found for {safe(book.get('author', ''))}.</p>",
+                f"<p style='color:#D4C5A9;'>No Bio found for {safe(book.get('author', ''))}.</p>",
                 unsafe_allow_html=True
             )
 # ── Recommender ───────────────────────────────────────────────────────────────
@@ -200,14 +200,14 @@ def recommend_three_lanes(query, df, tfidf_matrix, vectorizer,
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown("""
     <div style="text-align:center; padding:1.5rem 0 1rem 0;">
-        <h1 style="font-size:3rem; color:#F5F0E8;
+        <h1 style="font-size:3.5rem; color:#F5F0E8;
                    text-shadow:2px 2px 8px rgba(0,0,0,0.8);">
             World Fantasy
         </h1>
-        <p style="font-size:1.05rem; color:#D4C5A9; margin-bottom:0.75rem;">
+        <p style="font-size:1.8rem; color:#D4C5A9; margin-bottom:0.75rem;">
             Fantasy &amp; science fiction rooted in non-western mythologies and folklore
         </p>
-        <p style="font-size:1rem; color:#F5F0E8; max-width:700px;
+        <p style="font-size:1.3rem; color:#F5F0E8; max-width:700px;
                   margin:0 auto; line-height:1.8;
                   background:rgba(0,0,0,0.5); padding:1rem 1.5rem;
                   border-radius:10px;">
@@ -215,10 +215,10 @@ st.markdown("""
             something amazing from a different heritage — African mythology,
             Japanese folklore, Andean gods, Indigenous dreamtime, Arabian djinn
             and much more.
-            <strong style="color:#F5D78E;">3,995 books</strong>
+            <strong style="color:#F5D78E;">3.396 books</strong>
             from traditions beyond the western canon. Broaden your horizon.
         </p>
-        <p style="color:#D4C5A9; font-size:0.9rem; margin-top:0.75rem;">
+        <p style="color:#D4C5A9; font-size:1.2rem; margin-top:0.75rem;">
             🌍 Africa &nbsp;·&nbsp; ⛩️ Asia &nbsp;·&nbsp; 🕌 Middle East
             &nbsp;·&nbsp; 🌿 Indigenous &nbsp;·&nbsp; 🌊 Oceania
             &nbsp;·&nbsp; 🌺 South Asia &nbsp;·&nbsp; 🌎 Latin America
@@ -285,12 +285,20 @@ with middle:
             "Author":            "e.g. Nnedi Okorafor",
             "Keywords & themes": "e.g. japanese spirit world fox magic",
         }[search_mode],
-        label_visibility="collapsed"
+        label_visibility="collapsed",
+        key="search_input"
     )
 
     search_clicked = st.button("Search", use_container_width=True)
 
-    if search_clicked and query:
+    # Trigger on Enter OR button click
+    do_search = search_clicked or (
+        query != "" and
+        query != st.session_state.get("last_query", "")
+    )
+
+    if do_search and query:
+        st.session_state.last_query = query
         mode_map = {
             "Book title":        "title",
             "Author":            "author",
@@ -396,17 +404,6 @@ with middle:
             list(similar["author"].unique()) +
             (list(hidden_gems["author"].unique()) if len(hidden_gems) > 0 else [])
         ))
-
-        st.markdown(
-            "<p style='color:#F5D78E; font-size:0.9rem; margin-top:1rem;'>👤 View author bio:</p>",
-            unsafe_allow_html=True
-        )
-        show_author_bio(all_authors, safe)
-
-        # ── Render cards ──────────────────────────────────────────────────
-        html = f'<div style="max-width:750px; margin:0 auto;">{html}</div>'
-        st.markdown(html, unsafe_allow_html=True)
-            
 
 # ══ RIGHT ═════════════════════════════════════════════════════════════════════
 with right:
