@@ -6,10 +6,9 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).parents[2]))
 sys.path.insert(0, str(Path(__file__).parent.parent))
-sys.path.insert(0, str(Path(__file__).parent))
-from Src.recommender import build_index, load_data, recommend
+from Src.recommender_non_fiction import build_index, load_data, recommend
 from Components.shared import set_page_style, show_author_bio, back_button
-from nonfiction_utils import get_cover_url, get_goodreads_url, render_book_cover
+from Components.nonfiction_utils import get_cover_url, get_goodreads_url, render_book_cover
 
 
 st.set_page_config(page_title="Book Recommender", page_icon="📚", layout="wide")

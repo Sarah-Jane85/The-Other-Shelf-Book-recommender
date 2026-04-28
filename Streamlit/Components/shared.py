@@ -79,7 +79,7 @@ def back_button():
             display: inline-block;
             color: #D4C5A9;
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 1.1rem;
             padding: 0.4rem 0.8rem;
             border: 1px solid rgba(255,255,255,0.2);
             border-radius: 6px;
@@ -161,6 +161,10 @@ def show_author_bio(authors, safe_fn):
         else:
             st.markdown(f"""
                 <p style="color:#D4C5A9; font-size:0.9rem;">
+<<<<<<< HEAD
                     No bio found for {safe_fn(selected)}.
+=======
+                    No Bio found for {safe_fn(selected)}.
+>>>>>>> fb33932f5858f1358a61b791090d2ce279aaa995
                 </p>
             """, unsafe_allow_html=True)
