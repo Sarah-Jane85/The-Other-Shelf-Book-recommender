@@ -146,7 +146,7 @@ def show_book_dialog(book):
                     st.image(bio["image"], width=130)
         else:
             st.markdown(
-                f"<p style='color:#D4C5A9;'>No Wikipedia page found for {safe(book.get('author', ''))}.</p>",
+                f"<p style='color:#D4C5A9;'>No Bio found for {safe(book.get('author', ''))}.</p>",
                 unsafe_allow_html=True
             )
 # ── Recommender ───────────────────────────────────────────────────────────────
@@ -215,7 +215,7 @@ st.markdown("""
             something amazing from a different heritage — African mythology,
             Japanese folklore, Andean gods, Indigenous dreamtime, Arabian djinn
             and much more.
-            <strong style="color:#F5D78E;">3.995 books</strong>
+            <strong style="color:#F5D78E;">3.396 books</strong>
             from traditions beyond the western canon. Broaden your horizon.
         </p>
         <p style="color:#D4C5A9; font-size:1.2rem; margin-top:0.75rem;">
