@@ -163,10 +163,10 @@ All three recommenders use the same core approach:
 Each book's description, subjects, title and author are vectorized into a high-dimensional space. Books with similar content produce vectors with a small angle between them (high cosine similarity), which is used to surface recommendations.
 
 **Common design choices:**
-- Custom stopwords remove noise words (`book`, `novel`, `author`, `world`, `life`, etc.)
 - Bigrams (`(1,2)` n-gram range) capture meaningful two-word phrases
-- `min_df=3` removes words appearing in fewer than 3 books
 - Model artifacts serialized to `Models/` for use in the Streamlit app
+
+Note: stopword lists, `min_df`, and feature counts differ per recommender depending on genre needs.
 
 ---
 
@@ -270,7 +270,7 @@ Queries the [Open Library API](https://openlibrary.org/developers/api) (`search.
 ### Notebook 02 — Data Collection (Goodreads Scraping) + Description Enrichment
 Scrapes Goodreads search results using `curl` + BeautifulSoup for the same 39 authors, paginating up to 10 pages per author. Then visits each book's individual Goodreads page to fetch the full synopsis, saving progress every 50 books for resilience against interruptions.
 
-**Output:** `leftpolitics_raw(scraping).csv` (~5,487 records) + `leftpolitics_with_descriptions.csv`
+**Output:** `leftpolitics_raw(scraping).csv` (~5,187 records) + `leftpolitics_with_descriptions.csv` (~5,487 records, after description enrichment)
 
 ### Notebook 03 — Data Cleaning
 Merges and cleans the two sources:
@@ -292,6 +292,7 @@ Builds the content-based recommender:
 - Recommends by cosine similarity between the query vector and every book in the index
 - Returns top-N results with score > 0, deployed via Streamlit
 
+<<<<<<< HEAD
 **Output:** used directly by the Streamlit app via `recommender_non_fiction.py`
 > *Critical theory, postcolonial thought, and left-wing non-fiction — the books that challenge how you see the world.*
 
@@ -335,13 +336,16 @@ Two-stage cleaning pipeline:
 Builds the content-based recommender using the same shared pipeline as the other recommenders — TF-IDF vectorizer on combined title + description text, cosine similarity for recommendations.
 
 **Output:** `nonfiction_vectorizer.pkl`, `nonfiction_tfidf_matrix.npz`, `nonfiction_books_index.json`
+=======
+**Output:** `nonfiction_tfidf_matrix.npz`, `nonfiction_vectorizer.pkl`, `nonfiction_books_index.json` (serialized to `Models/`)
+>>>>>>> a5642d6 (Fix README formatting)
 
 ## 📊 Dataset Statistics
 
 | Metric | Value |
 |--------|-------|
 | Total books | 2,960 |
-| Unique authors | 39 |
+| Curated thinkers queried | 39 |
 | Sources | Open Library API + Goodreads (scraping) |
 | Year range | 1798 – 2026 |
 | Raw records collected | ~6,800 |
