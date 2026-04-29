@@ -11,6 +11,10 @@ import streamlit as st
 import sys
 from Components.shared import set_page_style, back_button, show_author_bio, get_author_bio
 
+st.write("ROOT:", ROOT)
+st.write("MODEL_DIR:", MODEL_DIR)
+st.write("Files found:", list(MODEL_DIR.glob("*")))
+
 # ── Paths ─────────────────────────────────────────────────────────────────────
 ROOT      = Path(__file__).resolve().parents[2]
 MODEL_DIR = ROOT / "Models"
