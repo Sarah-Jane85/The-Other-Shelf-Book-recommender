@@ -9,13 +9,17 @@ from scipy import sparse
 from sklearn.metrics.pairwise import cosine_similarity
 import streamlit as st
 import sys
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 from Components.shared import set_page_style, back_button, show_author_bio, get_author_bio
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-ROOT      = Path(__file__).resolve().parents[2]
+ROOT      = Path(__file__).resolve().parents[1]
 MODEL_DIR = ROOT / "Models"
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-from Components.shared import set_page_style
+
+st.write("ROOT:", ROOT)
+st.write("MODEL_DIR:", MODEL_DIR)
+st.write("Files found:", list(MODEL_DIR.glob("*")))
+
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -26,24 +30,40 @@ st.set_page_config(
 )
 
 set_page_style()
-
-from Components.shared import set_page_style, back_button
-
-# ── Back button ───────────────────────────────────────────────────────────────
 back_button()
 
 # ── Load model ────────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_model():
-    df           = pd.DataFrame(json.load(open(MODEL_DIR / "books_index.json", encoding="utf-8")))
-    tfidf_matrix = sparse.load_npz(MODEL_DIR / "tfidf_matrix.npz")
-    with open(MODEL_DIR / "vectorizer.pkl", "rb") as f:
+    df           = pd.DataFrame(json.load(open(MODEL_DIR / "fantasy_books_index.json", encoding="utf-8")))
+    tfidf_matrix = sparse.load_npz(MODEL_DIR / "fantasy_tfidf_matrix.npz")
+    with open(MODEL_DIR / "fantasy_vectorizer.pkl", "rb") as f:
         vectorizer = pickle.load(f)
     return df, tfidf_matrix, vectorizer
 
 df, tfidf_matrix, vectorizer = load_model()
 
-# ── Constants ─────────────────────────────────────────────────────────────────
+# ── Heritage region mapping ───────────────────────────────────────────────────
+HERITAGE_REGIONS = {
+    "🌍 Africa & Diaspora": ["africa", "african-fantasy", "african-science-fiction",
+                              "afrofuturism", "anansi", "igbo", "orisha", "yoruba", "zulu"],
+    "⛩️ Asia":              ["asian-fantasy", "asian-science-fiction", "chinese",
+                              "japanese", "korean", "wuxia", "xianxia"],
+    "🌺 South Asia":        ["south_asian"],
+    "🌊 Oceania":           ["oceania", "australian-fantasy"],
+    "🕌 Middle East":       ["middle-eastern-fantasy", "middle_eastern"],
+    "🌿 Indigenous":        ["indigenous-fantasy", "indigenous_americas"],
+    "🌎 Latin America":     ["latin-american-fantasy", "latin_american",
+                              "south-american-fantasy"],
+    "🌐 Southeast Asia":    ["filipino", "southeast_asian"],
+}
+
+# Reverse lookup: tag → region name
+TAG_TO_REGION = {}
+for region, tags in HERITAGE_REGIONS.items():
+    for tag in tags:
+        TAG_TO_REGION[tag] = region
+
 UNDERREPRESENTED = {
     "oceania", "australian-fantasy", "indigenous-fantasy", "indigenous_americas",
     "latin-american-fantasy", "latin_american", "south-american-fantasy",
@@ -51,6 +71,23 @@ UNDERREPRESENTED = {
     "african-science-fiction", "orisha", "igbo", "akan", "zulu", "yoruba",
     "anansi", "xianxia", "wuxia",
 }
+
+# ── Helper: get region for a book ────────────────────────────────────────────
+def get_region(source_tag):
+    """Return the human-readable region for a source_tag value."""
+    if isinstance(source_tag, list):
+        for t in source_tag:
+            if t in TAG_TO_REGION:
+                return TAG_TO_REGION[t]
+    elif isinstance(source_tag, str) and source_tag in TAG_TO_REGION:
+        return TAG_TO_REGION[source_tag]
+    return None
+
+def tags_in_region(source_tag, region_tags):
+    """Return True if any of the book's source tags are in the given region tags list."""
+    if isinstance(source_tag, list):
+        return any(t in region_tags for t in source_tag)
+    return source_tag in region_tags
 
 # ── Helper functions ──────────────────────────────────────────────────────────
 def safe(text):
@@ -64,53 +101,31 @@ def similarity_label(score):
     if score >= 0.04: return "Loosely related"
     return "Inspired by"
 
-def card(title, author, rating, num_ratings, label, border_color, tag=""):
-    r = f"⭐ {rating}" if pd.notna(rating) and rating else ""
-    n = f"· {int(num_ratings):,} ratings" if pd.notna(num_ratings) and num_ratings > 0 else ""
-    t = f'<span style="color:{border_color}; font-size:0.8rem;">{safe(tag)}</span><br>' if tag else ""
-    return f"""
-        <div style="background:rgba(0,0,0,0.7); padding:1rem 1.25rem;
-                    border-radius:10px; margin-bottom:0.6rem;
-                    border-left:4px solid {border_color};">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <div style="flex:1;">
-                    <strong style="color:#F5F0E8; font-size:1.05rem;">{safe(title)}</strong><br>
-                    <span style="color:#D4C5A9; font-size:0.9rem;">{safe(author)}</span><br>
-                    <span style="color:#D4C5A9; font-size:0.82rem;">{r} {n}</span>
-                </div>
-                <div style="text-align:right; padding-left:1rem; min-width:100px;">
-                    {t}
-                    <span style="color:{border_color}; font-size:0.82rem;">{safe(label)}</span>
-                </div>
-            </div>
-        </div>
-    """
 # ── Book detail dialog ────────────────────────────────────────────────────────
 @st.dialog("Book Details", width="large")
 def show_book_dialog(book):
     title  = safe(book.get("title", ""))
     author = safe(book.get("author", ""))
-    
+
     st.markdown(f"""
         <h2 style="color:#F5D78E; margin:0 0 0.25rem 0;">{title}</h2>
         <p style="color:#D4C5A9; font-size:1rem; margin:0 0 1rem 0;">by {author}</p>
     """, unsafe_allow_html=True)
 
-    # Rating + source tag
     rating = f"⭐ {book['avg_rating']}" if pd.notna(book.get('avg_rating')) else ""
     num    = f"· {int(book['num_ratings']):,} ratings" if pd.notna(book.get('num_ratings')) and book.get('num_ratings', 0) > 0 else ""
-    tag    = safe(book.get("source_tag", ""))
+    tag    = safe(str(book.get("source_tag", "")))
+    region = get_region(book.get("source_tag", ""))
 
     st.markdown(f"""
         <p style="color:#D4C5A9; font-size:0.9rem;">
-            {rating} {num} &nbsp;·&nbsp; 
-            <span style="color:#F5D78E;">{tag}</span>
+            {rating} {num} &nbsp;·&nbsp;
+            <span style="color:#F5D78E;">{region or tag}</span>
         </p>
     """, unsafe_allow_html=True)
 
     st.markdown("---")
 
-    # ── Tabs ──────────────────────────────────────────────────────────────────
     tab1, tab2 = st.tabs(["📖 Description", "👤 Author Bio"])
 
     with tab1:
@@ -146,32 +161,27 @@ def show_book_dialog(book):
                     st.image(bio["image"], width=130)
         else:
             st.markdown(
-                f"<p style='color:#D4C5A9;'>No Bio found for {safe(book.get('author', ''))}.</p>",
+                f"<p style='color:#D4C5A9;'>No bio found for {safe(book.get('author', ''))}.</p>",
                 unsafe_allow_html=True
             )
+
 # ── Recommender ───────────────────────────────────────────────────────────────
-def recommend_three_lanes(query, df, tfidf_matrix, vectorizer,
-                          search_by="title", top_n=5):
-    if search_by in ("title", "author"):
-        col     = "title" if search_by == "title" else "author"
-        matches = df[df[col].str.contains(query, case=False, na=False)]
-        if len(matches) == 0:
-            return None, pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
-        idx          = matches.index[0]
-        query_book   = df.iloc[idx]
-        query_vec    = tfidf_matrix[idx]
-        query_author = query_book["author"].lower().strip()
-    else:
-        query_vec    = vectorizer.transform([query])
-        query_book   = None
-        query_author = ""
-        idx          = None
+def recommend_three_lanes(idx, query_book, df, tfidf_matrix, vectorizer,
+                          query_vec=None, top_n=5):
+    """
+    Returns same_author, similar, hidden_gems, cross_cultural DataFrames.
+    query_vec is used for keyword mode (idx=None).
+    """
+    if query_vec is None:
+        query_vec = tfidf_matrix[idx]
 
     sim_scores            = cosine_similarity(query_vec, tfidf_matrix).flatten()
     results               = df.copy()
     results["similarity"] = sim_scores
     if idx is not None:
         results = results.drop(index=idx)
+
+    query_author = query_book["author"].lower().strip() if query_book is not None else ""
 
     same_author = results[
         results["author"].str.lower().str.strip() == query_author
@@ -181,21 +191,57 @@ def recommend_three_lanes(query, df, tfidf_matrix, vectorizer,
         results["author"].str.lower().str.strip() != query_author
     ].sort_values("similarity", ascending=False).head(top_n)
 
+    # ── Hidden gems — from underrepresented regions ───────────────────────
     hidden_pool = results[
-        (results["source_tag"].isin(UNDERREPRESENTED)) &
+        (results["source_tag"].apply(lambda t: tags_in_region(t, UNDERREPRESENTED))) &
         (results["author"].str.lower().str.strip() != query_author) &
         (results["similarity"] >= 0.02)
     ]
     hidden_gems = (
         hidden_pool
         .sort_values("similarity", ascending=False)
-        .groupby("source_tag").first()
-        .reset_index()
-        .sort_values("similarity", ascending=False)
         .head(top_n)
     )
 
-    return query_book, same_author, similar, hidden_gems
+    # ── Cross-cultural — similar content, different heritage region ───────
+    cross_cultural = pd.DataFrame()
+    if query_book is not None:
+        query_region_tags = []
+        q_tag = query_book.get("source_tag", "")
+        if isinstance(q_tag, list):
+            query_region_tags = q_tag
+        elif q_tag:
+            query_region_tags = [q_tag]
+
+        # Find which named region the query book belongs to
+        query_named_region = get_region(q_tag)
+
+        # Get all tags that belong to the same named region (to exclude them)
+        same_region_tags = set()
+        if query_named_region and query_named_region in HERITAGE_REGIONS:
+            same_region_tags = set(HERITAGE_REGIONS[query_named_region])
+
+        cross_pool = results[
+            (results["author"].str.lower().str.strip() != query_author) &
+            (results["similarity"] >= 0.04) &
+            # Exclude books from the same heritage region
+            (~results["source_tag"].apply(lambda t: tags_in_region(t, same_region_tags)))
+        ]
+
+        # Get one representative per region for variety
+        cross_pool = cross_pool.copy()
+        cross_pool["region"] = cross_pool["source_tag"].apply(get_region)
+        cross_cultural = (
+            cross_pool[cross_pool["region"].notna()]
+            .sort_values("similarity", ascending=False)
+            .groupby("region").first()
+            .reset_index()
+            .sort_values("similarity", ascending=False)
+            .head(top_n)
+        )
+
+    return same_author, similar, hidden_gems, cross_cultural
+
 
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown("""
@@ -215,7 +261,7 @@ st.markdown("""
             something amazing from a different heritage — African mythology,
             Japanese folklore, Andean gods, Indigenous dreamtime, Arabian djinn
             and much more.
-            <strong style="color:#F5D78E;">3.396 books</strong>
+            <strong style="color:#F5D78E;">about 3250 books</strong>
             from traditions beyond the western canon. Broaden your horizon.
         </p>
         <p style="color:#D4C5A9; font-size:1.2rem; margin-top:0.75rem;">
@@ -228,48 +274,37 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ── Layout ────────────────────────────────────────────────────────────────────
-middle, right = st.columns([3, 1])
+middle, spacer, right = st.columns([4, 0.5, 1])
 
 # ── Session state ─────────────────────────────────────────────────────────────
-if "query_book" not in st.session_state:
-    st.session_state.query_book  = None
-if "same_author" not in st.session_state:
-    st.session_state.same_author = pd.DataFrame()
-if "similar" not in st.session_state:
-    st.session_state.similar     = pd.DataFrame()
-if "hidden_gems" not in st.session_state:
-    st.session_state.hidden_gems = pd.DataFrame()
-if "no_results" not in st.session_state:
-    st.session_state.no_results  = False
+for key, default in [
+    ("query_book",     None),
+    ("same_author",    pd.DataFrame()),
+    ("similar",        pd.DataFrame()),
+    ("hidden_gems",    pd.DataFrame()),
+    ("cross_cultural", pd.DataFrame()),
+    ("no_results",     False),
+    ("selected_book",  None),
+    ("title_matches",  pd.DataFrame()),   # NEW: for partial title pick list
+    ("last_query",     ""),
+    ("heritage_filter", "All heritages"), # NEW: heritage filter
+]:
+    if key not in st.session_state:
+        st.session_state[key] = default
 
 # ══ MIDDLE ════════════════════════════════════════════════════════════════════
 with middle:
     st.markdown("""
     <style>
-        /* Narrow centered cards */
-        div[data-testid="stButton"] {
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        /* Search input same width */
-        div[data-testid="stTextInput"] {
-            max-width: 700px;
-            margin: 0 auto;
-                
-        /* Radio buttons same width */
-        div[data-testid="stRadio"] {
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        /* Also target the radio container */
-        div[data-testid="stHorizontalBlock"] {
-            max-width: 700px;
-            margin: 0 auto;
-        }
+        div[data-testid="stButton"] { max-width: 700px; margin: 0 auto; }
+        div[data-testid="stTextInput"] { max-width: 700px; margin: 0 auto; }
+        div[data-testid="stRadio"] { max-width: 700px; margin: 0 auto; }
+        div[data-testid="stHorizontalBlock"] { max-width: 700px; margin: 0 auto; }
     </style>
-""", unsafe_allow_html=True)
-    
-    col_l, col_radio, col_r = st.columns([1.6, 3.8, 1.6])
+    """, unsafe_allow_html=True)
+
+    # ── Search mode radio ─────────────────────────────────────────────────
+    col_l, col_radio, col_r = st.columns([0.8, 5.4, 0.8])
     with col_radio:
         search_mode = st.radio(
             "Search by:",
@@ -278,6 +313,31 @@ with middle:
             label_visibility="collapsed"
         )
 
+    # ── Heritage filter (only for Book title / Author modes) ─────────────
+    heritage_options = ["All heritages"] + list(HERITAGE_REGIONS.keys())
+    if search_mode != "Keywords & themes":
+        st.markdown("""
+        <style>
+            div[data-testid="stSelectbox"] { 
+                max-width: 700px; 
+                margin: 0 auto;
+                display: block;
+            }
+            div[data-testid="stSelectbox"] > div {
+                max-width: 700px;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+        st.session_state.heritage_filter = st.selectbox(
+            "Filter by heritage:",
+            heritage_options,
+            index=heritage_options.index(st.session_state.heritage_filter),
+            label_visibility="collapsed",
+        )
+    else:
+        st.session_state.heritage_filter = "All heritages"
+
+    # ── Text input ────────────────────────────────────────────────────────
     query = st.text_input(
         "Search",
         placeholder={
@@ -291,42 +351,123 @@ with middle:
 
     search_clicked = st.button("Search", use_container_width=True)
 
-    # Trigger on Enter OR button click
     do_search = search_clicked or (
-        query != "" and
-        query != st.session_state.get("last_query", "")
+        query != "" and query != st.session_state.get("last_query", "")
     )
 
     if do_search and query:
-        st.session_state.last_query = query
+        st.session_state.last_query     = query
+        st.session_state.title_matches  = pd.DataFrame()
+        st.session_state.no_results     = False
+
         mode_map = {
             "Book title":        "title",
             "Author":            "author",
             "Keywords & themes": "keywords",
         }
-        qb, sa, si, hg = recommend_three_lanes(
-            query, df, tfidf_matrix, vectorizer,
-            search_by=mode_map[search_mode]
-        )
-        st.session_state.query_book  = qb
-        st.session_state.same_author = sa
-        st.session_state.similar     = si
-        st.session_state.hidden_gems = hg
-        st.session_state.no_results  = (qb is None and mode_map[search_mode] != "keywords")
+        mode = mode_map[search_mode]
 
-    # ── Show results ──────────────────────────────────────────────────────────
-    query_book  = st.session_state.query_book
-    same_author = st.session_state.same_author
-    similar     = st.session_state.similar
-    hidden_gems = st.session_state.hidden_gems
+        # ── Apply heritage filter to search pool ──────────────────────────
+        search_df = df.copy()
+        chosen_heritage = st.session_state.heritage_filter
+        if chosen_heritage != "All heritages":
+            region_tags = HERITAGE_REGIONS[chosen_heritage]
+            search_df = search_df[
+                search_df["source_tag"].apply(lambda t: tags_in_region(t, region_tags))
+            ]
+
+        if mode == "keywords":
+            query_vec  = vectorizer.transform([query])
+            sa, si, hg, cc = recommend_three_lanes(
+                None, None, search_df, tfidf_matrix, vectorizer,
+                query_vec=query_vec
+            )
+            st.session_state.query_book     = None
+            st.session_state.same_author    = sa
+            st.session_state.similar        = si
+            st.session_state.hidden_gems    = hg
+            st.session_state.cross_cultural = cc
+
+        else:
+            col = "title" if mode == "title" else "author"
+            matches = search_df[search_df[col].str.contains(query, case=False, na=False)]
+
+            if len(matches) == 0:
+                st.session_state.no_results = True
+
+            elif len(matches) == 1 or mode == "author":
+                # Single match or author search → go straight to results
+                idx        = matches.index[0]
+                query_book = df.iloc[idx]
+                sa, si, hg, cc = recommend_three_lanes(
+                    idx, query_book, df, tfidf_matrix, vectorizer
+                )
+                st.session_state.query_book     = query_book
+                st.session_state.same_author    = sa
+                st.session_state.similar        = si
+                st.session_state.hidden_gems    = hg
+                st.session_state.cross_cultural = cc
+
+            else:
+                # Multiple title matches → show pick list
+                st.session_state.title_matches = matches.reset_index()
+
+    # ── If multiple title matches: show pick list ─────────────────────────
+    if not st.session_state.title_matches.empty:
+        matches = st.session_state.title_matches
+        st.markdown(f"""
+            <div style="background:rgba(0,0,0,0.65); padding:0.75rem 1rem;
+                        border-radius:8px; margin-bottom:1rem; margin-top:1rem;
+                        max-width:700px; margin-left:auto; margin-right:auto;">
+                <span style="color:#F5D78E; font-size:0.9rem;">
+                    📚 {len(matches)} books found — which one did you mean?
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
+
+        options = [
+            f"{row['title']} — {row['author']}"
+            for _, row in matches.iterrows()
+        ]
+
+        col_l3, col_pick, col_r3 = st.columns([1.6, 3.8, 1.6])
+        with col_pick:
+            chosen = st.selectbox(
+                "Pick a book:",
+                ["— select a book —"] + options,
+                label_visibility="collapsed",
+                key="title_pick"
+            )
+
+        if chosen != "— select a book —":
+            chosen_idx_in_matches = options.index(chosen)
+            idx        = int(matches.iloc[chosen_idx_in_matches]["index"])
+            query_book = df.iloc[idx]
+            sa, si, hg, cc = recommend_three_lanes(
+                idx, query_book, df, tfidf_matrix, vectorizer
+            )
+            st.session_state.query_book     = query_book
+            st.session_state.same_author    = sa
+            st.session_state.similar        = si
+            st.session_state.hidden_gems    = hg
+            st.session_state.cross_cultural = cc
+            st.session_state.title_matches  = pd.DataFrame()  # clear the list
+            st.rerun()
+
+    # ── Show results ──────────────────────────────────────────────────────
+    query_book    = st.session_state.query_book
+    same_author   = st.session_state.same_author
+    similar       = st.session_state.similar
+    hidden_gems   = st.session_state.hidden_gems
+    cross_cultural = st.session_state.cross_cultural
 
     if st.session_state.no_results:
-        st.warning("No results found.")
+        st.warning("No results found. Try a different title or remove the heritage filter.")
 
     elif query_book is not None or len(similar) > 0:
-        
-        # ── Showing results for ───────────────────────────────────────────
+
         if query_book is not None:
+            region = get_region(query_book.get("source_tag", ""))
             st.markdown(f"""
                 <div style="background:rgba(0,0,0,0.65); padding:0.75rem 1rem;
                             border-radius:8px; margin-bottom:1.25rem; margin-top:1rem;
@@ -335,65 +476,81 @@ with middle:
                     <strong style="color:#F5F0E8; font-size:1.05rem;">
                         {safe(query_book['title'])} — {safe(query_book['author'])}
                     </strong>
+                    {"<br><span style='color:#D4C5A9; font-size:0.85rem;'>" + region + "</span>" if region else ""}
                 </div>
             """, unsafe_allow_html=True)
 
-        # ── Render cards with buttons ─────────────────────────────────────
+        # ── Render cards ──────────────────────────────────────────────────
         def render_lane(books, border_color, show_tag=False):
             for i, (_, book) in enumerate(books.iterrows()):
-                    label    = similarity_label(book["similarity"]) if "similarity" in book.index else ""
-                    r        = f"⭐ {book['avg_rating']}" if pd.notna(book.get("avg_rating")) else ""
-                    n        = f"· {int(book['num_ratings']):,} ratings" if pd.notna(book.get("num_ratings")) and book.get("num_ratings", 0) > 0 else ""
-                    tag_text = safe(book["source_tag"]) if show_tag else ""
-                    btn_key  = f"card_{i}_{border_color[-3:]}_{safe(book['title'])[:8]}"
-                    right_side = f"{tag_text} · {label}" if show_tag and label else (tag_text or label)
+                label    = similarity_label(book["similarity"]) if "similarity" in book.index else ""
+                r        = f"⭐ {book['avg_rating']}" if pd.notna(book.get("avg_rating")) else ""
+                n        = f"· {int(book['num_ratings']):,} ratings" if pd.notna(book.get("num_ratings")) and book.get("num_ratings", 0) > 0 else ""
+                btn_key  = f"card_{i}_{border_color[-3:]}_{safe(book['title'])[:8]}"
 
-                    st.markdown(f"""
-                        <div style="max-width:700px; margin:0 auto;">
-                            <div style="background:rgba(0,0,0,0.7); padding:1rem 1.25rem 0.5rem 1.25rem;
-                                        border-radius:10px 10px 0 0; margin-bottom:0;
-                                        border-left:4px solid {border_color}; border-top:1px solid rgba(255,255,255,0.05);
-                                        border-right:1px solid rgba(255,255,255,0.05);">
-                                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                    <div style="flex:1;">
-                                        <strong style="color:#F5F0E8; font-size:1.05rem;">{safe(book['title'])}</strong><br>
-                                        <span style="color:#D4C5A9; font-size:0.9rem;">{safe(book['author'])}</span><br>
-                                        <span style="color:#D4C5A9; font-size:0.82rem;">{r} {n}</span>
-                                    </div>
-                                    <div style="text-align:right; padding-left:1rem; min-width:90px; 
-                                                color:{border_color}; font-size:0.82rem;">
-                                        {right_side}
-                                    </div>
+                if show_tag:
+                    region_name = book.get("region") or get_region(book.get("source_tag", ""))
+                    right_text  = f"{safe(str(region_name))} · {label}" if region_name else label
+                else:
+                    right_text = label
+
+                st.markdown(f"""
+                    <div style="max-width:900px; margin:0 auto;">
+                        <div style="background:rgba(0,0,0,0.7); padding:1rem 1.25rem 0.5rem 1.25rem;
+                                    border-radius:10px 10px 0 0; margin-bottom:0;
+                                    border-left:4px solid {border_color};
+                                    border-top:1px solid rgba(255,255,255,0.05);
+                                    border-right:1px solid rgba(255,255,255,0.05);">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                <div style="flex:1;">
+                                    <strong style="color:#F5F0E8; font-size:1.05rem;">{safe(book['title'])}</strong><br>
+                                    <span style="color:#D4C5A9; font-size:0.9rem;">{safe(book['author'])}</span><br>
+                                    <span style="color:#D4C5A9; font-size:0.82rem;">{r} {n}</span>
+                                </div>
+                                <div style="text-align:right; padding-left:1rem; min-width:100px;
+                                            color:{border_color}; font-size:0.82rem;">
+                                    {right_text}
                                 </div>
                             </div>
-                        """, unsafe_allow_html=True)
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
 
-                    if st.button("📖 Description & Author Bio", key=btn_key, use_container_width=True):
-                        st.session_state.selected_book = book.to_dict()
+                if st.button("📖 Description & Author Bio", key=btn_key, use_container_width=True):
+                    st.session_state.selected_book = book.to_dict()
 
-                    st.markdown("<div style='margin-bottom:0.6rem;'></div>", unsafe_allow_html=True)
+                st.markdown("<div style='margin-bottom:0.6rem;'></div>", unsafe_allow_html=True)
 
-        # ── Lane 1 ────────────────────────────────────────────────────────
+        # ── Lane 1: More by this author ───────────────────────────────────
         if len(same_author) > 0:
             st.markdown("<h3 style=\"color:#F5D78E; margin:1.25rem 0 0.5rem 0; text-align:center;\">More by this author</h3>",
-            unsafe_allow_html=True)
+                unsafe_allow_html=True)
             render_lane(same_author, "#F5D78E")
 
-        # ── Lane 2 ────────────────────────────────────────────────────────
+        # ── Lane 2: Similar books ─────────────────────────────────────────
         st.markdown("<h3 style=\"color:#F5D78E; margin:1.25rem 0 0.5rem 0; text-align:center;\">Similar books</h3>",
             unsafe_allow_html=True)
         render_lane(similar, "#A8D5B5")
 
-        # ── Lane 3 ────────────────────────────────────────────────────────
+        # ── Lane 3: Hidden gems ───────────────────────────────────────────
         if len(hidden_gems) > 0:
-            st.markdown("<h3 style=\"color:#F5D78E; margin:1.25rem 0 0.5rem 0; text-align:center;\">💎 Hidden gems from other heritages</h3>",
-            unsafe_allow_html=True)
+            st.markdown("<h3 style=\"color:#F5D78E; margin:1.25rem 0 0.5rem 0; text-align:center;\">💎 Hidden gems from underrepresented heritages</h3>",
+                unsafe_allow_html=True)
             render_lane(hidden_gems, "#E8B4C0", show_tag=True)
 
-        # ── Show dialog if book selected ──────────────────────────────────
-        if "selected_book" not in st.session_state:
-            st.session_state.selected_book = None
+        # ── Lane 4: Cross-cultural recommendations ────────────────────────
+        if len(cross_cultural) > 0:
+            st.markdown("<h3 style=\"color:#F5D78E; margin:1.25rem 0 0.5rem 0; text-align:center;\">🌐 Same story, different world</h3>",
+                unsafe_allow_html=True)
+            st.markdown("""
+                <p style="color:#D4C5A9; font-size:0.9rem; text-align:center;
+                           max-width:700px; margin:0 auto 0.75rem auto;">
+                    You liked this story — here's the same kind of magic from a completely different part of the world.
+                </p>
+            """, unsafe_allow_html=True)
+            render_lane(cross_cultural, "#B4C8E8", show_tag=True)
 
+        # ── Show dialog ───────────────────────────────────────────────────
         if st.session_state.selected_book is not None:
             show_book_dialog(st.session_state.selected_book)
             st.session_state.selected_book = None
@@ -402,8 +559,13 @@ with middle:
         all_authors = list(dict.fromkeys(
             (list(same_author["author"].unique()) if len(same_author) > 0 else []) +
             list(similar["author"].unique()) +
-            (list(hidden_gems["author"].unique()) if len(hidden_gems) > 0 else [])
+            (list(hidden_gems["author"].unique()) if len(hidden_gems) > 0 else []) +
+            (list(cross_cultural["author"].unique()) if len(cross_cultural) > 0 else [])
         ))
+        if all_authors:
+            st.markdown("<p style='color:#F5D78E; font-size:0.9rem; margin-top:1rem;'>👤 View author bio:</p>",
+                unsafe_allow_html=True)
+            show_author_bio(all_authors, safe)
 
 # ══ RIGHT ═════════════════════════════════════════════════════════════════════
 with right:
@@ -423,8 +585,7 @@ with right:
         (df["cover_url"].str.startswith("http", na=False)) &
         (df["description"].str.len() > 200) &
         (~df["description"].str.contains("A work of fantasy fiction involving", na=False)) &
-        # Filter out comics and series volumes
-        (~df["title"].str.contains(r"#\d|Vol\.|Volume|Season One|Season Two", 
+        (~df["title"].str.contains(r"#\d|Vol\.|Volume|Season One|Season Two",
                                 case=False, na=False, regex=True))
     ].sample(5, random_state=None)
 
@@ -441,8 +602,7 @@ with right:
                 <div style="background:rgba(0,0,0,0.55); padding:0.5rem;
                             border-radius:8px; margin-bottom:0.75rem;
                             border:1px solid rgba(255,255,255,0.12);
-                            text-align:center;
-                            transition: border 0.2s ease;"
+                            text-align:center;"
                      onmouseover="this.style.borderColor='rgba(245,215,142,0.5)'"
                      onmouseout="this.style.borderColor='rgba(255,255,255,0.12)'">
                     <img src="{url}"
@@ -464,4 +624,3 @@ with right:
             </a>"""
 
     st.markdown(covers_html, unsafe_allow_html=True)
-

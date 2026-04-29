@@ -67,18 +67,28 @@ WESTERN_NOISE_AUTHORS = {
     'iain banks', 'arthur c. clarke', 'lois mcmaster bujold',
     'susanna clarke', 'kelly link', 'jane yolen',
     # Extra western authors found via clustering
-    'stephen king', 'caroline peckham', 'neal stephenson',
+    'caroline peckham', 'neal stephenson',
     'sarah a. parker', 'samantha shannon', 'olivia blake',
     'kazuo ishiguro', 'truman capote', 'shel silverstein',
     'laura dave', 'gabrielle zevin', 'marissa meyer', 'pierce brown',
     'naomi novik', 'diana wynne jones', 'raymond e. feist',
     'lafcadio hearn', 'ruth r. carter',
+    # Academic / non-fiction authors found in afrofuturism tag
+    'andré m. carrington', 'achille mbembe', 'alex zamalin',
+    'isiah lavender iii', 'rasheedah phillips', 'tavia nyong\'o',
+    'constance backhouse', 'erik steinskog', 'sandra jackson',
+    'esther l. jones', 'sami schalk', 'shelley streeby',
+    'annalisa oboe', 'philip butler', 'eugen bacon',
+    'reynaldo anderson', 'martin johnson', 'warren shapiro',
+    'tressie mcmillan cottom', 'ibram x. kendi', 'colin kaepernick',
+    'peter linebaugh', 'édouard glissant', 'duewa m. frazier',
+    'kevin m. strait',
 }
-
+ 
 NOISE_SUBJECTS = {'tarzan', 'colonialism', 'imperialism', 'safari', 'big game hunting', 'missionaries'}
-
+ 
 COMIC_SUBJECTS = {'graphic novel', 'graphic novels', 'comics', 'comic book', 'comic strip', 'sequential art'}
-
+ 
 NONFICTION_SUBJECTS = {
     'criticism', 'critical essays', 'literary criticism',
     'history and criticism', 'congresses', 'study and teaching',
@@ -88,17 +98,24 @@ NONFICTION_SUBJECTS = {
     'cross-cultural studies', 'mass media', 'self-perception',
     'creative ability in children', 'imagination in children',
 }
-
+ 
 NONFICTION_TITLE_SIGNALS = {
     'biography', 'autobiography', 'interviews', 'conversations with',
     'art of ', 'making of', 'the life of', 'history of',
     'study guide', 'essays on', 'criticism', 'scholarly',
     'coloring book', 'colouring book', 'activity book',
+    # Added: academic series/publisher signals
+    'routledge research', 'palgrave studies', 'new suns: race',
+    'american studies now', 'black studies and critical thinking',
+    'black literary and cultural expressions', 'osgoode society',
+    'literary prehistory', 'theory & practice', 'and other essays',
+    'a legal history', 'community history', 'introduction to afrofuturism',
+    'partible paternity', 'anthropological theory',
 }
-
+ 
 ORG_SIGNALS = ['publishing llc', 'publishing inc', 'enterprises', 'museum',
                'institute', 'university', 'library of congress', 'disney', 'various']
-
+ 
 TITLE_NOISE = [
     "Art of Ruth E. Carter", "Conversations with Octavia Butler",
     "Bloodchildren: Stories by the Octavia E. Butler Scholars",
@@ -107,8 +124,38 @@ TITLE_NOISE = [
     "Why Wakanda Matters", "MCU: The Reign of Marvel Studios",
     "Star Child: A Biographical Constellation", "NOT A BOOK",
     "Charlotte's Web",
+    # Added: specific academic titles found in dataset
+    "Speculative Blackness: The Future of Race in Science Fiction",
+    "Black Quantum Futurism: Theory & Practice (Vol. 1)",
+    "Afrofuturism Rising: The Literary Prehistory of a Movement",
+    "Black Utopia: The History of an Idea from Black Nationalism to Afrofuturism",
+    "Afrofuturism: A History of Black Futures",
+    "Critique of Black Reason",
+    "Black Utopias: Speculative Life and the Music of Other Worlds",
+    "Black Apocalypse: Afrofuturism at the End of the World",
+    "Colour-Coded: A Legal History of Racism in Canada, 1900-1950",
+    "The Black Imagination: Science Fiction, Futurism and the Speculative",
+    "Four Hundred Souls: A Community History of African America, 1619-2019",
+    "Our History Has Always Been Contraband: In Defense of Black Studies",
+    "Bodyminds Reimagined: (Dis)ability, Race, and Gender in Black Women's Speculative Fiction",
+    "Medicine and Ethics in Black Women's Speculative Fiction",
+    "Imagining the Future of Climate Change",
+    "Black Atlantic Speculative Fictions",
+    "Recharting the Black Atlantic",
+    "Critical Black Futures: Speculative Theories and Explorations",
+    "Afro-Centered Futurisms in Our Speculative Fiction",
+    "The Black Speculative Arts Movement",
+    "Introduction to Afrofuturism",
+    "Afrofuturism and Black Sound Studies",
+    "Literary Afrofuturism in the Twenty-First Century",
+    "The Many-Headed Hydra: Sailors, Slaves, Commoners",
+    "Caribbean Discourse: Selected Essays",
+    "Thick: And Other Essays",
+    "Partible paternity and anthropological theory",
+    "Art And Scientific Thought; Historical Studies Towards A Modern Revision Of Their Antagonism",
+    "New History of the DC Universe: The Dakota Incident",
 ]
-
+ 
 JUNK_SIGNALS = [
     'tagebuch', 'notizbuch', 'malbuch', 'planer', 'kalender',
     'coloring', 'colouring', 'color by number', 'weight tracker',
@@ -120,11 +167,11 @@ JUNK_SIGNALS = [
     'coloring book',
 ]
 
-
 # ── Filter functions ──────────────────────────────────────────────────────────
 def ol_filter(row: pd.Series) -> bool:
     """Return True if the OL book should be kept."""
     author        = str(row.get('author', '')).lower().strip()
+    title_text    = str(row.get('title', '')).lower()
     subjects_text = ' '.join(str(s) for s in (row.get('subjects') or [])).lower()
     if author in WESTERN_NOISE_AUTHORS:
         return False
@@ -133,6 +180,8 @@ def ol_filter(row: pd.Series) -> bool:
     if any(c in subjects_text for c in COMIC_SUBJECTS):
         return False
     if any(n in subjects_text for n in NONFICTION_SUBJECTS):
+        return False
+    if any(n in title_text for n in NONFICTION_TITLE_SIGNALS):
         return False
     return True
 
@@ -374,7 +423,10 @@ def main():
             merged.at[idx, 'description'] = 'A work of fantasy fiction involving: ' + ', '.join(subj) + '.'
 
     # ── Additional filters ────────────────────────────────────────────────────
-    merged = merged[~merged['title'].isin(TITLE_NOISE)].reset_index(drop=True)
+    # Partial title match (catches titles with series names appended)
+    merged = merged[~merged['title'].apply(
+        lambda t: any(noise.lower() in str(t).lower() for noise in TITLE_NOISE)
+    )].reset_index(drop=True)
     merged = merged[~merged['title'].str.contains('coloring book', case=False, na=False)].reset_index(drop=True)
     merged = merged[~merged['author'].str.lower().str.strip().apply(
         lambda a: any(s in a for s in ORG_SIGNALS)
