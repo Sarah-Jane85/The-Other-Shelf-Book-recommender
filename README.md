@@ -38,7 +38,7 @@ streamlit run Streamlit/Home.py
 Book-recommendations/
 ├── Data/
 │   ├── Clean/
-│   │   └── merged_non_western_fantasy.json     # World Fantasy cleaned dataset
+│   │   └── non_fiction
 │   ├── Keywords/
 │   └── Raw/
 ├── Models/
