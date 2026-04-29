@@ -42,8 +42,8 @@ output_data_raw_non_western_fantasy:
   gr_results:       Data/Raw/non_western_fantasy/goodreads_with_descriptions.csv
 
 output_data_clean_non_western_fantasy:
-  merged:           Data/Clean/merged_non_western_fantasy.json
-  merged_csv:       Data/Clean/merged_non_western_fantasy.csv
+  merged:           Data/Clean/non_western_fantasy/merged_non_western_fantasy.json
+  merged_csv:       Data/Clean/non_western_fantasy/merged_non_western_fantasy.csv
 
 output_data_models_non_western_fantasy:
   tfidf_matrix:     Models/tfidf_matrix.npz
@@ -85,7 +85,7 @@ recommender:
 
 # --- shared Streamlit inputs ---
 input_data_streamlit:
-  non_western_fantasy:  Data/Clean/merged_non_western_fantasy.json
+  non_western_fantasy:  Data/Clean/non_western_fantasy/merged_non_western_fantasy.json
   models:               Models/
   graphic_novels:
   non_fiction:          "Data/non fiction/leftpolitics_final_clean.csv"
