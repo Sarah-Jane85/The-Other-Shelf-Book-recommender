@@ -177,31 +177,55 @@ Builds the content-based recommender:
 
 *By Gonçalo Trindade*
 
-> *[Tagline / short description — to be filled in]*
+> *The algorithm won't show you these. We will.*
 
-*[Short project description — to be filled in]*
+A content-based recommender for left-wing non-fiction — critical theory, postcolonial studies, feminist thought, Marxist analysis, and radical perspectives that mainstream platforms consistently overlook. Search by keyword, topic, author, or title to find your next read across **2,960 books** from 39 curated thinkers.
 
 ## 🔧 Pipeline
 
-### Notebook 01 — Data Collection
-*[Description — to be filled in]*
+### Notebook 01 — Data Collection (Open Library API)
+Queries the [Open Library API](https://openlibrary.org/developers/api) (`search.json`) author by author across 39 curated thinkers — from Angela Davis and Frantz Fanon to David Graeber and Mark Fisher. Up to 50 results per author, filtered to only keep works where the queried author is actually listed. Includes a 0.5s polite delay between requests.
 
-### Notebook 02 — Data Cleaning
-*[Description — to be filled in]*
+**Output:** `leftpolitics_raw(API).csv` (~1,316 records)
 
-### Notebook 03 — Exploratory Data Analysis
-*[Description — to be filled in]*
+### Notebook 02 — Data Collection (Goodreads Scraping) + Description Enrichment
+Scrapes Goodreads search results using `curl` + BeautifulSoup for the same 39 authors, paginating up to 10 pages per author. Then visits each book's individual Goodreads page to fetch the full synopsis, saving progress every 50 books for resilience against interruptions.
 
-### Notebook 04 — TF-IDF Recommender
-*[Description — to be filled in]*
+**Output:** `leftpolitics_raw(scraping).csv` (~5,487 records) + `leftpolitics_with_descriptions.csv`
+
+### Notebook 03 — Data Cleaning
+Merges and cleans the two sources:
+- Strips whitespace and standardises author name casing
+- Drops the `subjects` column (100% null from scraping)
+- Drops rows missing title, author, or description (1,314 books had no synopsis)
+- Language detection with `langdetect` — keeps English only (1,211 non-English books removed)
+- Deduplication on title + author
+
+**Output:** `leftpolitics_final_clean.csv` (2,960 books)
+
+### Notebook 04 — Exploratory Data Analysis
+8 charts exploring the dataset: top authors by book count, publication year distribution, top unigrams and bigrams from descriptions, missing value overview, KMeans clustering metrics (elbow method), PCA cluster scatter plot, and cluster size distribution.
+
+### Notebook 05 — TF-IDF Recommender
+Builds the content-based recommender:
+- Constructs a `corpus` field combining title + author + description
+- Fits a TF-IDF vectorizer (25,000 features, English stopwords, bigrams `(1,2)`)
+- Recommends by cosine similarity between the query vector and every book in the index
+- Returns top-N results with score > 0, deployed via Streamlit
+
+**Output:** used directly by the Streamlit app via `recommender_non_fiction.py`
 
 ## 📊 Dataset Statistics
 
 | Metric | Value |
 |--------|-------|
-| Total books | *[to be filled in]* |
-| Unique authors | *[to be filled in]* |
-| Sources | *[to be filled in]* |
+| Total books | 2,960 |
+| Unique authors | 39 |
+| Sources | Open Library API + Goodreads (scraping) |
+| Year range | 1798 – 2026 |
+| Raw records collected | ~6,800 |
+| Non-English books removed | 1,211 |
+| Books dropped (no description) | 1,314 |
 
 ---
 
