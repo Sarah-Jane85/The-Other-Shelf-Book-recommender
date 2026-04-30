@@ -557,10 +557,7 @@ with middle:
             (list(hidden_gems["author"].unique()) if len(hidden_gems) > 0 else []) +
             (list(cross_cultural["author"].unique()) if len(cross_cultural) > 0 else [])
         ))
-        if all_authors:
-            st.markdown("<p style='color:#F5D78E; font-size:0.9rem; margin-top:1rem;'>👤 View author bio:</p>",
-                unsafe_allow_html=True)
-            show_author_bio(all_authors, safe)
+    
 
 # ══ RIGHT ═════════════════════════════════════════════════════════════════════
 with right:

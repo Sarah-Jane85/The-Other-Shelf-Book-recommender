@@ -484,13 +484,6 @@ with middle:
             )
         )
 
-        if all_authors:
-            st.markdown(
-                "<p style='color:#F5D78E; font-size:0.9rem; margin-top:1rem;'>👤 View author bio:</p>",
-                unsafe_allow_html=True,
-            )
-            show_author_bio(all_authors, safe)
-
 # ══ RIGHT ════════════════════════════════════════════════════════════════════
 with right:
     st.markdown(
