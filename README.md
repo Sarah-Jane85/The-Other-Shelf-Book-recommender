@@ -163,10 +163,10 @@ All three recommenders use the same core approach:
 Each book's description, subjects, title and author are vectorized into a high-dimensional space. Books with similar content produce vectors with a small angle between them (high cosine similarity), which is used to surface recommendations.
 
 **Common design choices:**
-- Custom stopwords remove noise words (`book`, `novel`, `author`, `world`, `life`, etc.)
 - Bigrams (`(1,2)` n-gram range) capture meaningful two-word phrases
-- `min_df=3` removes words appearing in fewer than 3 books
 - Model artifacts serialized to `Models/` for use in the Streamlit app
+
+Note: stopword lists, `min_df`, and feature counts differ per recommender depending on genre needs.
 
 ---
 
@@ -256,6 +256,44 @@ Builds the content-based recommender:
 
 *By Gonçalo Trindade*
 
+> *The algorithm won't show you these. We will.*
+
+A content-based recommender for left-wing non-fiction — critical theory, postcolonial studies, feminist thought, Marxist analysis, and radical perspectives that mainstream platforms consistently overlook. Search by keyword, topic, author, or title to find your next read across **2,960 books** from 39 curated thinkers.
+
+## 🔧 Pipeline
+
+### Notebook 01 — Data Collection (Open Library API)
+Queries the [Open Library API](https://openlibrary.org/developers/api) (`search.json`) author by author across 39 curated thinkers — from Angela Davis and Frantz Fanon to David Graeber and Mark Fisher. Up to 50 results per author, filtered to only keep works where the queried author is actually listed. Includes a 0.5s polite delay between requests.
+
+**Output:** `leftpolitics_raw(API).csv` (~1,316 records)
+
+### Notebook 02 — Data Collection (Goodreads Scraping) + Description Enrichment
+Scrapes Goodreads search results using `curl` + BeautifulSoup for the same 39 authors, paginating up to 10 pages per author. Then visits each book's individual Goodreads page to fetch the full synopsis, saving progress every 50 books for resilience against interruptions.
+
+**Output:** `leftpolitics_raw(scraping).csv` (~5,187 records) + `leftpolitics_with_descriptions.csv` (~5,487 records, after description enrichment)
+
+### Notebook 03 — Data Cleaning
+Merges and cleans the two sources:
+- Strips whitespace and standardises author name casing
+- Drops the `subjects` column (100% null from scraping)
+- Drops rows missing title, author, or description (1,314 books had no synopsis)
+- Language detection with `langdetect` — keeps English only (1,211 non-English books removed)
+- Deduplication on title + author
+
+**Output:** `leftpolitics_final_clean.csv` (2,960 books)
+
+### Notebook 04 — Exploratory Data Analysis
+8 charts exploring the dataset: top authors by book count, publication year distribution, top unigrams and bigrams from descriptions, missing value overview, KMeans clustering metrics (elbow method), PCA cluster scatter plot, and cluster size distribution.
+
+### Notebook 05 — TF-IDF Recommender
+Builds the content-based recommender:
+- Constructs a `corpus` field combining title + author + description
+- Fits a TF-IDF vectorizer (25,000 features, English stopwords, bigrams `(1,2)`)
+- Recommends by cosine similarity between the query vector and every book in the index
+- Returns top-N results with score > 0, deployed via Streamlit
+
+<<<<<<< HEAD
+**Output:** used directly by the Streamlit app via `recommender_non_fiction.py`
 > *Critical theory, postcolonial thought, and left-wing non-fiction — the books that challenge how you see the world.*
 
 A content-based recommender focused on left-wing non-fiction, critical theory, and postcolonial studies. Built around a curated list of 39 authors — from Angela Davis and Frantz Fanon to David Graeber and Mark Fisher — spanning Black American thought, African and Caribbean theory, feminist and queer theory, Latin American perspectives, and contemporary left politics.
@@ -298,11 +336,21 @@ Two-stage cleaning pipeline:
 Builds the content-based recommender using the same shared pipeline as the other recommenders — TF-IDF vectorizer on combined title + description text, cosine similarity for recommendations.
 
 **Output:** `nonfiction_vectorizer.pkl`, `nonfiction_tfidf_matrix.npz`, `nonfiction_books_index.json`
+=======
+**Output:** `nonfiction_tfidf_matrix.npz`, `nonfiction_vectorizer.pkl`, `nonfiction_books_index.json` (serialized to `Models/`)
+>>>>>>> a5642d6 (Fix README formatting)
 
 ## 📊 Dataset Statistics
 
 | Metric | Value |
 |--------|-------|
+| Total books | 2,960 |
+| Curated thinkers queried | 39 |
+| Sources | Open Library API + Goodreads (scraping) |
+| Year range | 1798 – 2026 |
+| Raw records collected | ~6,800 |
+| Non-English books removed | 1,211 |
+| Books dropped (no description) | 1,314 |
 | Total books | 3,034 |
 | Curated authors | 39 |
 | Sources | Open Library + Goodreads |

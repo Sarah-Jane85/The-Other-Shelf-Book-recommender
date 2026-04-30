@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).parents[2]))
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from Src.recommender_non_fiction import build_index, load_data, recommend
 from Components.shared import set_page_style, show_author_bio, back_button
-from Components.nonfiction_utils import get_cover_url, get_goodreads_url, render_book_cover
+from Components.nonfiction_utils import get_goodreads_url
 
 
 st.set_page_config(page_title="Book Recommender", page_icon="📚", layout="wide")
@@ -82,24 +82,38 @@ if query.strip():
 
         for _, row in results.iterrows():
             year = f" · {int(row['year_published'])}" if pd.notna(row["year_published"]) else ""
-            
-            cover_url = get_cover_url(row['title'], row['author'])
-            col1, col2 = st.columns([1, 4])
+            goodreads_url = get_goodreads_url(str(row.get('open_library_key', '')))
+            goodreads_html = (
+                f'<a href="{goodreads_url}" target="_blank" '
+                f'style="color:#F5D78E; font-size:0.9rem; text-decoration:none;">'
+                f'📖 View on Goodreads</a>'
+                if goodreads_url else ""
+            )
 
-            render_book_cover(col1, cover_url)
+            st.markdown(f"""
+                <div style="
+                    background: rgba(20, 12, 6, 0.85);
+                    border: 1px solid rgba(245, 215, 142, 0.2);
+                    border-left: 3px solid #F5D78E;
+                    border-radius: 10px;
+                    padding: 1.1rem 1.5rem 1rem 1.5rem;
+                    margin-bottom: 0.2rem;
+                ">
+                    <div style="font-size:1.2rem; font-weight:700; color:#F5F0E8;
+                                line-height:1.4; margin-bottom:0.35rem;">
+                        {html.escape(row['title'])}
+                    </div>
+                    <div style="color:#F5D78E; font-size:0.95rem; margin-bottom:0.6rem;">
+                        {html.escape(row['author'])}{year}
+                    </div>
+                    {goodreads_html}
+                </div>
+            """, unsafe_allow_html=True)
 
-            with col2:
-                st.markdown(f"### {row['title']}")
-                st.markdown(f"**{row['author']}**{year}")
+            with st.expander("Description"):
+                st.write(row["description"])
 
-                goodreads_url = get_goodreads_url(str(row.get('open_library_key', '')))
-                if goodreads_url:
-                    st.markdown(f"[📖 View on Goodreads]({goodreads_url})")
-
-                with st.expander("Description"):
-                    st.write(row["description"])
-            
-            st.divider()
+            st.markdown("<div style='margin-bottom:0.75rem;'></div>", unsafe_allow_html=True)
         
         st.markdown("### 📖 Learn More About the Authors")
         authors = results['author'].unique().tolist()
