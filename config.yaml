@@ -88,4 +88,4 @@ input_data_streamlit:
   non_western_fantasy:  Data/Clean/non_western_fantasy/merged_non_western_fantasy.json
   models:               Models/
   graphic_novels:
-  non_fiction:          "Data/non fiction/leftpolitics_final_clean.csv"
+  non_fiction:          "Data/Clean/non_fiction/leftpolitics_final_clean.csv"
