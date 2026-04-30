@@ -9,17 +9,12 @@ from scipy import sparse
 from sklearn.metrics.pairwise import cosine_similarity
 import streamlit as st
 import sys
-sys.path.append(str(Path(__file__).resolve().parents[1]))
+sys.path.append(str(Path(__file__).resolve().parents[2]))
 from Components.shared import set_page_style, back_button, show_author_bio, get_author_bio
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-ROOT      = Path(__file__).resolve().parents[1]
+ROOT      = Path(__file__).resolve().parents[2]
 MODEL_DIR = ROOT / "Models"
-
-st.write("ROOT:", ROOT)
-st.write("MODEL_DIR:", MODEL_DIR)
-st.write("Files found:", list(MODEL_DIR.glob("*")))
-
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
