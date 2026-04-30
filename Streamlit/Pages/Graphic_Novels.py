@@ -528,9 +528,10 @@ with right:
         title = safe(book["title"])[:35] + ("..." if len(str(book["title"])) > 35 else "")
         author = safe(book["author"])[:25]
         url = str(book["cover_url"])
-        source_url = str(book.get("source_url", ""))
-        source = str(book.get("source", "source")).replace("_", " ")
-
+        ol_key = str(book.get("ol_key", ""))
+        source_url = f"https://openlibrary.org{ol_key}" if ol_key and ol_key != "nan" else ""
+        source = "Open Library"
+        
         link_start = f'<a href="{source_url}" target="_blank" style="text-decoration:none;">' if source_url else ""
         link_end = "</a>" if source_url else ""
 
@@ -539,7 +540,9 @@ with right:
                 <div style="background:rgba(0,0,0,0.55); padding:0.5rem;
                             border-radius:8px; margin-bottom:0.75rem;
                             border:1px solid rgba(255,255,255,0.12);
-                            text-align:center;">
+                            text-align:center;"
+                     onmouseover="this.style.borderColor='rgba(245,215,142,0.5)'"
+                     onmouseout="this.style.borderColor='rgba(255,255,255,0.12)'">
                     <img src="{url}"
                          style="max-height:220px; max-width:100%;
                                 object-fit:contain; border-radius:3px;
