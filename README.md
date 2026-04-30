@@ -37,7 +37,7 @@ streamlit run Streamlit/Home.py
 | | |
 |---|---|
 | 🎞️ **Presentation** | [View on Prezi](https://prezi.com/view/zQ1t442K5eAsngtLwpVA/?referral_token=VzXuWplnB3FN) |
-| 🚀 **Live App** | *coming soon* |
+| 🚀 **Live App** | [View on Streamlit](https://the-other-shelf-book-recommender.streamlit.app/) |
 
 ---
 
@@ -336,9 +336,7 @@ Two-stage cleaning pipeline:
 Builds the content-based recommender using the same shared pipeline as the other recommenders — TF-IDF vectorizer on combined title + description text, cosine similarity for recommendations.
 
 **Output:** `nonfiction_vectorizer.pkl`, `nonfiction_tfidf_matrix.npz`, `nonfiction_books_index.json`
-=======
-**Output:** `nonfiction_tfidf_matrix.npz`, `nonfiction_vectorizer.pkl`, `nonfiction_books_index.json` (serialized to `Models/`)
->>>>>>> a5642d6 (Fix README formatting)
+
 
 ## 📊 Dataset Statistics
 
