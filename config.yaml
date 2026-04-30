@@ -52,16 +52,21 @@ output_data_models_non_western_fantasy:
 
 # --- mature_graphic_novels ---
 input_data_mature_graphic_novels:
-  keywords:
+  keywords: Data/Keywords/mature_graphic_novels_keywords.json
 
 output_data_raw_mature_graphic_novels:
-  api_results:
-  scraped_results:
+  api_results: Data/Raw/graphic_novels/openlibrary_graphic_novels_raw.csv
+  open_library_descriptions: Data/Clean/graphic_novels_with_descriptions.csv
 
 output_data_clean_mature_graphic_novels:
-  deduplicated:
-  filtered:
-  final:
+  deduplicated: Data/Clean/graphic_novels_with_descriptions.csv
+  filtered: Data/Clean/merged_graphic_novels.csv
+  final: Data/Clean/merged_graphic_novels.csv
+
+output_data_models_mature_graphic_novels:
+  tfidf_matrix: Models/graphic_tfidf_matrix.npz
+  vectorizer: Models/graphic_vectorizer.pkl
+  books_index: Models/graphic_books_index.json
 
 # --- non_fiction ---
 input_data_non_fiction:
@@ -85,7 +90,7 @@ recommender:
 
 # --- shared Streamlit inputs ---
 input_data_streamlit:
-  non_western_fantasy:  Data/Clean/non_western_fantasy/merged_non_western_fantasy.json
-  models:               Models/
-  graphic_novels:
-  non_fiction:          "Data/Clean/non_fiction/leftpolitics_final_clean.csv"
+  non_western_fantasy: Data/Clean/merged_non_western_fantasy.json
+  models: Models/
+  mature_graphic_novels: Data/Clean/merged_graphic_novels.csv
+  non_fiction: "Data/non fiction/leftpolitics_final_clean.csv"
