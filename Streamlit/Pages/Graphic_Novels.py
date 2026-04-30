@@ -532,6 +532,7 @@ with right:
         source_url = f"https://openlibrary.org{ol_key}" if ol_key and ol_key != "nan" else ""
         source = "Open Library"
         
+
         link_start = f'<a href="{source_url}" target="_blank" style="text-decoration:none;">' if source_url else ""
         link_end = "</a>" if source_url else ""
 
@@ -555,9 +556,7 @@ with right:
                     <p style="color:#D4C5A9; font-size:0.72rem; margin:0;">
                         {author}
                     </p>
-                    <p style="color:#F5D78E; font-size:0.68rem; margin:0.2rem 0 0 0;">
-                        view on {source} →
-                    </p>
+                    
                 </div>
             {link_end}
         """

@@ -13,6 +13,7 @@ from Components.nonfiction_utils import get_cover_url, get_goodreads_url, render
 
 st.set_page_config(page_title="Book Recommender", page_icon="📚", layout="wide")
 set_page_style()
+back_button()
 
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown("""
@@ -36,8 +37,6 @@ st.markdown("""
     </div>
     <hr style="border-color:rgba(255,255,255,0.15); margin-bottom:1.5rem;">
 """, unsafe_allow_html=True)
-
-back_button()
 
 # Improve text input visibility
 st.markdown("""
