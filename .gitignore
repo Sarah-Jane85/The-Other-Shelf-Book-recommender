@@ -1,5 +1,5 @@
 .env
-
+Notebooks/exploratory
 Data/Clean/*.csv
 Data/Raw/**/*.csv
 .venv/pyvenv.cfg

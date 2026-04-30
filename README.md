@@ -11,8 +11,8 @@ A suite of three content-based book recommenders built as part of the Ironhack D
 | Recommender | Focus | Author |
 |---|---|---|
 | 🌍 **World Fantasy** | Non-western fantasy & sci-fi from 7 heritage regions | Sarah Jane Nede |
-| 📖 **Non-Fiction** | *[description coming soon]* | Gonçalo Trindade |
-| 🎨 **Graphic Novels** | *[description coming soon]* | Rachel Vianna |
+| 📖 **Non-Fiction** | Left-wing critical theory & postcolonial studies — 39 curated authors | Gonçalo Trindade |
+| 🎨 **Graphic Novels** | Narrative graphic novels & literary comics beyond the superhero shelf | Rachel Vianna |
 
 The three recommenders share a Streamlit home page and visual style. From the home page, users select their genre and are taken to the corresponding recommender. Each recommender is built independently using the same TF-IDF + cosine similarity pipeline.
 
@@ -32,44 +32,123 @@ streamlit run Streamlit/Home.py
 
 ---
 
+## 🔗 Links
+
+| | |
+|---|---|
+| 🎞️ **Presentation** | [View on Prezi](https://prezi.com/view/zQ1t442K5eAsngtLwpVA/?referral_token=VzXuWplnB3FN) |
+| 🚀 **Live App** | *coming soon* |
+
+---
+
 ## 🗂️ Project Structure
 
 ```
 Book-recommendations/
 ├── Data/
 │   ├── Clean/
-│   │   └── merged_non_western_fantasy.json     # World Fantasy cleaned dataset
+│   │   ├── graphic_novels/
+│   │   ├── non_fiction/
+│   │   └── non_western_fantasy/
 │   ├── Keywords/
+│   │   └── non_western_fantasy_keywords.json
 │   └── Raw/
+│       ├── graphic_novels/
+│       │   └── openlibrary_graphic_novels_raw.csv
+│       ├── non_fiction/
+│       │   ├── leftpolitics_raw(API).csv
+│       │   └── leftpolitics_raw(scraping).csv
+│       └── non_western_fantasy/
+│           ├── goodreads_raw.csv
+│           ├── goodreads_with_descriptions.csv
+│           ├── ol_genre_first.json
+│           └── ol_genre_first_checkpoint.json
 ├── Models/
-│   ├── books_index.json                         # Books metadata for Streamlit
-│   ├── tfidf_matrix.npz                         # Serialized TF-IDF matrix
-│   └── vectorizer.pkl                           # Serialized TF-IDF vectorizer
+│   ├── fantasy_books_index.json
+│   ├── fantasy_tfidf_matrix.npz
+│   ├── fantasy_vectorizer.pkl
+│   ├── graphic_books_index.json
+│   ├── graphic_tfidf_matrix.npz
+│   └── graphic_vectorizer.pkl
 ├── Notebooks/
-│   └── 
+│   ├── exploratory/
+│   ├── graphic_novels/
+│   │   ├── 01_api_collector_graphic_novels.ipynb
+│   │   ├── 02_google_books_enrichment_graphic_novels.ipynb
+│   │   ├── 03_merge_and_clean_graphic_novels.ipynb
+│   │   ├── 04_eda_graphic_novels.ipynb
+│   │   └── 05_recommender_graphic_novels.ipynb
+│   ├── non_fiction/
+│   │   ├── actual-scraping.ipynb
+│   │   ├── data-cleaning-non-fiction.ipynb
+│   │   ├── EDA-non-fiction.ipynb
+│   │   ├── final-data-cleaning.ipynb
+│   │   ├── non-fiction-API.ipynb
+│   │   ├── non-fiction-scraping.ipynb
+│   │   └── nonfiction-cleaning-scraping.ipynb
+│   └── non_western_fantasy/
+│       ├── 01_api_collector_fantasy_clean.ipynb
+│       ├── 02_goodreads_scraper_fantasy_clean.ipynb
+│       ├── 03_merge_and_clean_fantasy_clean.ipynb
+│       ├── 04_eda_fantasy_clean.ipynb
+│       └── 05_recommender_fantasy_clean.ipynb
 ├── Reports/
+│   ├── EDA_Graphic_Novels/
+│   │   ├── 01_publication_years.png
+│   │   ├── 02_top_authors.png
+│   │   ├── 03_description_words.png
+│   │   └── 04_theme_counts.png
 │   ├── EDA-Fantasy/
-│   ├── EDA-Graphic-Novels/
+│   │   ├── 01_books_by_region.png
+│   │   ├── 02_publication_years.png
+│   │   ├── 03_ratings.png
+│   │   ├── 04_top_authors.png
+│   │   ├── 05_most_rated.png
+│   │   ├── 06_coverage.png
+│   │   ├── 07_rating_by_region.png
+│   │   ├── 08_top_tags.png
+│   │   ├── 09_top_tfidf_words.png
+│   │   ├── 10_tfidf_words_per_region.png
+│   │   ├── 11_wordcloud.png
+│   │   ├── 12_umap_clusters.png
+│   │   ├── 12a_hdbscan_clusters.png
+│   │   ├── 12b_heritage_regions.png
+│   │   └── 13_synonym_analysis.png
 │   └── EDA-Non-Fiction/
+│       ├── 01_top_authors.png
+│       ├── 02_publication_years.png
+│       ├── 03_top_unigrams.png
+│       ├── 04_top_bigrams.png
+│       ├── 05_missing_values.png
+│       ├── 06_clustering_metrics.png
+│       ├── 07_clusters_pca.png
+│       └── 08_cluster_sizes.png
 ├── Src/
 │   ├── 01_api_collector_fantasy.py
 │   ├── 02_goodreads_scraper_fantasy.py
 │   ├── 03_merge_and_clean_fantasy.py
 │   ├── 04_eda_fantasy.py
-│   └── 05_recommender_fantasy.py
+│   ├── 05_recommender_fantasy.py
+│   └── recommender_non_fiction.py
 ├── Streamlit/
-│   ├── Assets/
+│   ├── assets/
 │   │   ├── book_fantasy.png
 │   │   ├── book_graphic.png
 │   │   └── book_nonfiction.png
-│   ├── Components/
+│   ├── components/
+│   │   ├── nonfiction_utils.py
 │   │   └── shared.py
-│   ├── Pages/
+│   ├── pages/
+│   │   ├── Graphic_Novels.py
+│   │   ├── Non-Fiction.py
 │   │   └── World_Fantasy.py
-│   ├── Home.py
-│   └── config.yaml
-├── .env
+│   └── Home.py
+├── .gitignore
+├── .python-version
+├── config.yaml
 ├── pyproject.toml
+├── requirements.txt
+├── uv.lock
 └── README.md
 ```
 
@@ -84,10 +163,10 @@ All three recommenders use the same core approach:
 Each book's description, subjects, title and author are vectorized into a high-dimensional space. Books with similar content produce vectors with a small angle between them (high cosine similarity), which is used to surface recommendations.
 
 **Common design choices:**
-- Custom stopwords remove noise words (`book`, `novel`, `author`, `world`, `life`, etc.)
 - Bigrams (`(1,2)` n-gram range) capture meaningful two-word phrases
-- `min_df=3` removes words appearing in fewer than 3 books
 - Model artifacts serialized to `Models/` for use in the Streamlit app
+
+Note: stopword lists, `min_df`, and feature counts differ per recommender depending on genre needs.
 
 ---
 
@@ -177,31 +256,106 @@ Builds the content-based recommender:
 
 *By Gonçalo Trindade*
 
-> *[Tagline / short description — to be filled in]*
+> *The algorithm won't show you these. We will.*
 
-*[Short project description — to be filled in]*
+A content-based recommender for left-wing non-fiction — critical theory, postcolonial studies, feminist thought, Marxist analysis, and radical perspectives that mainstream platforms consistently overlook. Search by keyword, topic, author, or title to find your next read across **2,960 books** from 39 curated thinkers.
 
 ## 🔧 Pipeline
 
-### Notebook 01 — Data Collection
-*[Description — to be filled in]*
+### Notebook 01 — Data Collection (Open Library API)
+Queries the [Open Library API](https://openlibrary.org/developers/api) (`search.json`) author by author across 39 curated thinkers — from Angela Davis and Frantz Fanon to David Graeber and Mark Fisher. Up to 50 results per author, filtered to only keep works where the queried author is actually listed. Includes a 0.5s polite delay between requests.
 
-### Notebook 02 — Data Cleaning
-*[Description — to be filled in]*
+**Output:** `leftpolitics_raw(API).csv` (~1,316 records)
 
-### Notebook 03 — Exploratory Data Analysis
-*[Description — to be filled in]*
+### Notebook 02 — Data Collection (Goodreads Scraping) + Description Enrichment
+Scrapes Goodreads search results using `curl` + BeautifulSoup for the same 39 authors, paginating up to 10 pages per author. Then visits each book's individual Goodreads page to fetch the full synopsis, saving progress every 50 books for resilience against interruptions.
 
-### Notebook 04 — TF-IDF Recommender
-*[Description — to be filled in]*
+**Output:** `leftpolitics_raw(scraping).csv` (~5,187 records) + `leftpolitics_with_descriptions.csv` (~5,487 records, after description enrichment)
+
+### Notebook 03 — Data Cleaning
+Merges and cleans the two sources:
+- Strips whitespace and standardises author name casing
+- Drops the `subjects` column (100% null from scraping)
+- Drops rows missing title, author, or description (1,314 books had no synopsis)
+- Language detection with `langdetect` — keeps English only (1,211 non-English books removed)
+- Deduplication on title + author
+
+**Output:** `leftpolitics_final_clean.csv` (2,960 books)
+
+### Notebook 04 — Exploratory Data Analysis
+8 charts exploring the dataset: top authors by book count, publication year distribution, top unigrams and bigrams from descriptions, missing value overview, KMeans clustering metrics (elbow method), PCA cluster scatter plot, and cluster size distribution.
+
+### Notebook 05 — TF-IDF Recommender
+Builds the content-based recommender:
+- Constructs a `corpus` field combining title + author + description
+- Fits a TF-IDF vectorizer (25,000 features, English stopwords, bigrams `(1,2)`)
+- Recommends by cosine similarity between the query vector and every book in the index
+- Returns top-N results with score > 0, deployed via Streamlit
+
+<<<<<<< HEAD
+**Output:** used directly by the Streamlit app via `recommender_non_fiction.py`
+> *Critical theory, postcolonial thought, and left-wing non-fiction — the books that challenge how you see the world.*
+
+A content-based recommender focused on left-wing non-fiction, critical theory, and postcolonial studies. Built around a curated list of 39 authors — from Angela Davis and Frantz Fanon to David Graeber and Mark Fisher — spanning Black American thought, African and Caribbean theory, feminist and queer theory, Latin American perspectives, and contemporary left politics.
+
+**3,034 books** across left-wing, critical theory, and postcolonial studies.
+
+## 🔧 Pipeline
+
+### Notebook 01 — Open Library API Collector
+Fetches books by 39 curated left-wing and critical theory authors from the [Open Library API](https://openlibrary.org/developers/api). Only books where the queried author is actually listed are kept. Includes authors across traditions: Black American thinkers (Angela Davis, Audre Lorde, W.E.B. Du Bois), African & Caribbean theorists (Frantz Fanon, C.L.R. James, Achille Mbembe), Latin American voices (Paulo Freire, Eduardo Galeano), feminist & queer theory (bell hooks, Silvia Federici, Sara Ahmed), and contemporary left (David Graeber, Mark Fisher, Slavoj Žižek).
+
+**Output:** `leftpolitics_raw.csv`
+
+### Notebook 02 — Goodreads Scraper
+Scrapes Goodreads search results for the same 39 authors using `curl` + BeautifulSoup. Paginates through each author's book list and enriches with full descriptions from individual book pages. Includes checkpoint/resume functionality.
+
+**Output:** `leftpolitics_with_descriptions.csv`
+
+### Notebook 03 — Data Cleaning
+Two-stage cleaning pipeline:
+- Basic cleaning: strips whitespace, standardizes author names, fills missing authors from `queried_author`, drops rows missing title/author, deduplicates
+- Final cleaning: drops rows missing descriptions, applies English-language filter using `langdetect`, drops `subjects` column (100% null), resets index
+
+**Output:** `leftpolitics_final_clean.csv`
+
+### Notebook 04 — Exploratory Data Analysis
+5 analyses exploring the dataset:
+
+| Chart | Description |
+|-------|-------------|
+| 01 | Top 15 authors by book count |
+| 02 | Publication year distribution |
+| 03 | Top 20 single-word topics (CountVectorizer) |
+| 04 | Top 20 two-word topic phrases |
+| 05 | Word cloud of titles + descriptions |
+| 06 | K-Means clustering (elbow + silhouette, k=5) |
+| 07 | PCA cluster visualization |
+
+### Notebook 05 — TF-IDF Recommender
+Builds the content-based recommender using the same shared pipeline as the other recommenders — TF-IDF vectorizer on combined title + description text, cosine similarity for recommendations.
+
+**Output:** `nonfiction_vectorizer.pkl`, `nonfiction_tfidf_matrix.npz`, `nonfiction_books_index.json`
+=======
+**Output:** `nonfiction_tfidf_matrix.npz`, `nonfiction_vectorizer.pkl`, `nonfiction_books_index.json` (serialized to `Models/`)
+>>>>>>> a5642d6 (Fix README formatting)
 
 ## 📊 Dataset Statistics
 
 | Metric | Value |
 |--------|-------|
-| Total books | *[to be filled in]* |
-| Unique authors | *[to be filled in]* |
-| Sources | *[to be filled in]* |
+| Total books | 2,960 |
+| Curated thinkers queried | 39 |
+| Sources | Open Library API + Goodreads (scraping) |
+| Year range | 1798 – 2026 |
+| Raw records collected | ~6,800 |
+| Non-English books removed | 1,211 |
+| Books dropped (no description) | 1,314 |
+| Total books | 3,034 |
+| Curated authors | 39 |
+| Sources | Open Library + Goodreads |
+| Top topics | capitalism · colonialism · race · labor · decolonization |
+| Traditions covered | Black American · African & Caribbean · Latin American · Feminist · Contemporary Left |
 
 ---
 
@@ -211,31 +365,63 @@ Builds the content-based recommender:
 
 *By Rachel Vianna*
 
-> *[Tagline / short description — to be filled in]*
+> *Sequential art beyond the mainstream — because the best stories aren't always told in words.*
 
-*[Short project description — to be filled in]*
+A content-based recommender for graphic novels, graphic memoirs and literary comics. Built for readers who want to discover serious, narrative-driven graphic works beyond the superhero shelf — from war memoirs and political histories to coming-of-age stories and visual autobiographies.
+
+**351 books** sourced from Open Library, enriched with descriptions and filtered down to narrative graphic works only.
 
 ## 🔧 Pipeline
 
-### Notebook 01 — Data Collection
-*[Description — to be filled in]*
+### Notebook 01 — Open Library API Collector
+Collects graphic novel candidates from the [Open Library API](https://openlibrary.org/developers/api) using 10 search terms (`graphic novel`, `sequential art`, `graphic memoir`, `illustrated novel`, `visual storytelling`, etc.). Deduplicates on title + author.
 
-### Notebook 02 — Data Cleaning
-*[Description — to be filled in]*
+**Output:** `openlibrary_graphic_novels_raw.csv` (~5,609 books raw)
 
-### Notebook 03 — Exploratory Data Analysis
-*[Description — to be filled in]*
+### Notebook 02 — Description Enrichment
+Fetches descriptions for all books from the Open Library works API using each book's `ol_key`. Saves enriched dataset for cleaning.
 
-### Notebook 04 — TF-IDF Recommender
-*[Description — to be filled in]*
+**Output:** `graphic_novels_with_descriptions.csv` (5,609 books, ~3,409 missing descriptions filled where available)
+
+### Notebook 03 — Merge, Filter & Clean
+Core cleaning pipeline:
+- Drops rows missing title, author, or description
+- Deduplicates on title + author
+- Filters to include only genuine graphic works (must contain terms like `graphic novel`, `sequential art`, `graphic memoir`, `illustrated`, `cartoon`)
+- Excludes noise: how-to guides, drawing tutorials, theory/criticism, coloring books, children's content, animation books
+- Filters further to narrative works using story keywords (`story`, `memoir`, `war`, `family`, `coming of age`, etc.)
+- Cleans and normalizes text for the model
+
+**Output:** `merged_graphic_novels.csv` (351 books)
+
+### Notebook 04 — Exploratory Data Analysis
+4 charts exploring the dataset:
+
+| Chart | Description |
+|-------|-------------|
+| 01 | Publication year distribution |
+| 02 | Top authors by book count |
+| 03 | Most common words in descriptions |
+| 04 | Recurring themes (memoir, war, family, identity, politics…) |
+
+### Notebook 05 — TF-IDF Recommender
+Builds the content-based recommender:
+- Constructs `combined_text` from description (weighted ×2) + title + author
+- Fits a TF-IDF vectorizer (8,000 features, English stopwords)
+- Cosine similarity used to rank and return top-N recommendations
+- Serializes model to `Models/` for the Streamlit app
+
+**Output:** `graphic_vectorizer.pkl`, `graphic_tfidf_matrix.npz`, `graphic_books_index.json`
 
 ## 📊 Dataset Statistics
 
 | Metric | Value |
 |--------|-------|
-| Total books | *[to be filled in]* |
-| Unique authors | *[to be filled in]* |
-| Sources | *[to be filled in]* |
+| Total books | 351 |
+| Raw books collected | 5,609 |
+| Sources | Open Library |
+| Year range | varies |
+| Top themes | memoir · war · family · identity · politics |
 
 ---
 
