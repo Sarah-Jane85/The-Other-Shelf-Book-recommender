@@ -292,7 +292,6 @@ Builds the content-based recommender:
 - Recommends by cosine similarity between the query vector and every book in the index
 - Returns top-N results with score > 0, deployed via Streamlit
 
-<<<<<<< HEAD
 **Output:** used directly by the Streamlit app via `recommender_non_fiction.py`
 > *Critical theory, postcolonial thought, and left-wing non-fiction — the books that challenge how you see the world.*
 
